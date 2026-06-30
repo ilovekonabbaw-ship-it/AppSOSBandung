@@ -127,8 +127,9 @@
       <section class="patient"><div class="grid2">
         <div class="fld full"><label>รพ.สต. ที่ประเมิน</label><input id="facility" placeholder="ชื่อ รพ.สต. ที่ประเมิน"></div>
         <div class="fld"><label>ชื่อผู้ป่วย</label><input id="pname" placeholder="ชื่อ-สกุล"></div>
+        <div class="fld"><label>เบอร์โทรติดต่อ</label><input id="pphone" inputmode="tel" placeholder="เบอร์ที่ติดต่อได้"></div>
         <div class="fld"><label>วันที่ประเมิน</label><input id="adate" type="date"></div>
-        <div class="fld full"><label>จุดประเมิน</label><select id="ppoint">
+        <div class="fld"><label>จุดประเมิน</label><select id="ppoint">
           <option value="ที่ รพ.สต.">ที่ รพ.สต.</option>
           <option value="ที่บ้าน (เยี่ยมบ้าน)">ที่บ้าน (เยี่ยมบ้าน)</option>
         </select></div>
@@ -167,7 +168,7 @@
 
   <!-- ============ DASHBOARD ============ -->
   <section data-sec="dashboard" style="display:none">
-    <div class="block"><h3>สรุปภาพรวม</h3>
+    <div class="block"><h3>สรุปภาพรวม (ทั้งหมด)</h3>
       <div class="stats">
         <div class="stat"><b id="stTotal">–</b><span>ทั้งหมด</span></div>
         <div class="stat low"><b id="stLow">–</b><span>ต่ำ</span></div>
@@ -176,16 +177,13 @@
       </div>
       <div class="monitor" id="stToday" style="margin-top:10px"></div>
     </div>
-    <div class="block"><h3>การคัดกรองล่าสุด</h3><div id="recList"><div class="empty">—</div></div>
-      <div class="row-btns" style="margin-top:12px"><button onclick="loadDash()">รีเฟรช</button></div></div>
-    <div class="block"><h3>ประวัติรายคน</h3>
-      <div id="lockBox"><p style="font-size:13.5px;color:var(--muted);margin:0 0 4px">ใส่รหัสเพื่อดูประวัติรายบุคคล</p>
-        <div class="lock"><input id="pinInput" type="password" inputmode="numeric" placeholder="รหัส"><button onclick="unlock()">ปลดล็อก</button></div></div>
-      <div id="personBox" style="display:none">
-        <div class="lock"><input id="hnSearch" placeholder="ค้นด้วยชื่อผู้ป่วย"><button onclick="searchPerson()">ค้นหา</button></div>
-        <div id="personResult"></div>
-      </div>
+    <div class="block"><h3>ภาพรวมรายเดือน</h3>
+      <div class="fld"><label>เลือกปี (พ.ศ.)</label><select id="yearSel" onchange="renderMonthly()"></select></div>
+      <div id="monthlyBox" style="margin-top:10px"></div>
     </div>
+    <div class="block"><h3>การคัดกรองล่าสุด <span style="font-size:12px;color:var(--muted);font-weight:500">(แตะเพื่อดูรายละเอียด)</span></h3>
+      <div id="recList"><div class="empty">—</div></div>
+      <div class="row-btns" style="margin-top:12px"><button onclick="loadDash()">รีเฟรช</button></div></div>
   </section>
 
   <!-- ============ REFERRAL ============ -->
@@ -205,7 +203,7 @@
       <h4>ประเมินและคงสภาพ (ABC)</h4>
       <ul><li>เปิดทางเดินหายใจให้โล่ง จัดท่าเหมาะสม</li><li>ให้ออกซิเจนเมื่อ SpO₂ &lt; 94% หรือมีภาวะหายใจลำบาก</li><li>เปิดเส้นเลือดและให้สารน้ำตามข้อบ่งชี้ (ระวังในผู้ป่วยโรคหัวใจ/ไต)</li></ul>
       <h4>เฝ้าระวังระหว่างรอ/นำส่ง</h4>
-      <ul><li>วัดสัญญาณชีพและ SpO₂ ซ้ำทุก 15–30 นาที</li><li>ประเมินระดับความรู้สึกตัวเป็นระยะ</li><li>หากสงสัยภาวะติดเชื้อในกระแสเลือด พิจารณา POCT lactate หากมี</li></ul>
+      <ul><li>วัดสัญญาณชีพและ SpO₂ ซ้ำทุก 15–30 นาที</li><li>ประเมินระดับความรู้สึกตัวเป็นระยะ</li><li>ตรวจน้ำตาลปลายนิ้ว (DTX) เพื่อแยกภาวะน้ำตาลในเลือดผิดปกติ</li><li>หากมีเครื่องตรวจแลคเตทข้างเตียง (POCT lactate — การตรวจค่าแลคเตทในเลือดแบบรู้ผลทันที บ่งชี้ความรุนแรงของภาวะติดเชื้อ) ให้ตรวจประกอบ</li></ul>
       <h4>เตรียมส่งต่อ</h4>
       <ul><li>โทรประสานหน่วยปลายทางและแจ้งระดับความเร่งด่วน</li><li>ส่งข้อความ SBAR (สร้างจากหน้า "คำนวณ")</li><li>เตรียมเอกสาร ญาติ และยานพาหนะ</li></ul>
     </div>
@@ -230,295 +228,4 @@
       </div></div>
     </div>
     <div class="acc" onclick="this.classList.toggle('open')">
-      <div class="acc-head" style="background:linear-gradient(135deg,#e08a1e,#b45309)"><span class="em">⚠️</span> สัญญาณเตือนที่ต้องนึกถึง sepsis<span class="chev">▾</span></div>
-      <div class="acc-body"><div class="inner">
-        <ul><li>ไข้สูงหรืออุณหภูมิต่ำผิดปกติ หนาวสั่น</li><li>หายใจเร็ว ชีพจรเร็ว ความดันต่ำ</li><li>ซึมลง สับสน ปัสสาวะออกน้อย</li><li>มีแหล่งติดเชื้อ เช่น ปอด ทางเดินปัสสาวะ แผล</li></ul>
-      </div></div>
-    </div>
-    <div class="acc" onclick="this.classList.toggle('open')">
-      <div class="acc-head" style="background:linear-gradient(135deg,#2563eb,#1d4ed8)"><span class="em">🏥</span> ทำไมต้องคัดกรองตั้งแต่ รพ.สต.<span class="chev">▾</span></div>
-      <div class="acc-body"><div class="inner">
-        <p>รพ.สต. เป็นจุดสัมผัสแรกของผู้ป่วยในชุมชน การคัดกรองด้วย SOS Score ตั้งแต่ระดับปฐมภูมิช่วยให้ตรวจพบผู้ป่วยที่มีแนวโน้มทรุดลงและส่งต่อได้ทันเวลา เชื่อมระบบเฝ้าระวังให้ต่อเนื่องถึงโรงพยาบาลแม่ข่าย</p>
-      </div></div>
-    </div>
-    <div class="acc" onclick="this.classList.toggle('open')">
-      <div class="acc-head" style="background:linear-gradient(135deg,#1f9d54,#15803d)"><span class="em">💧</span> การดูแลเบื้องต้นก่อนส่งต่อ<span class="chev">▾</span></div>
-      <div class="acc-body"><div class="inner">
-        <ul><li>ดูแลทางเดินหายใจ ให้ออกซิเจนเมื่อ SpO₂ &lt; 94%</li><li>เปิดเส้นเลือด ให้สารน้ำตามข้อบ่งชี้</li><li>วัดสัญญาณชีพซ้ำทุก 15–30 นาที</li><li>ประสานปลายทางและส่ง SBAR ล่วงหน้า</li></ul>
-      </div></div>
-    </div>
-    <div class="acc" onclick="this.classList.toggle('open')">
-      <div class="acc-head" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)"><span class="em">📋</span> SBAR — การสื่อสารส่งต่อ<span class="chev">▾</span></div>
-      <div class="acc-body"><div class="inner">
-        <ul><li><b>S</b> Situation — ผู้ป่วยคือใคร ปัญหาปัจจุบัน</li><li><b>B</b> Background — ภูมิหลัง/โรคประจำตัว</li><li><b>A</b> Assessment — คะแนน SOS, สัญญาณชีพ, สิ่งที่พบ</li><li><b>R</b> Recommendation — สิ่งที่ต้องการ เช่น ขอรับส่งต่อ</li></ul>
-      </div></div>
-    </div>
-  </section>
-</div>
-
-<div class="bar" id="bottomBar"><div class="bar-in">
-  <div class="sc"><b id="barScore">0</b><span>คะแนน</span></div>
-  <button class="btn ghost" onclick="resetAll()">ล้าง</button>
-  <button class="btn" onclick="calculate()">คำนวณ &amp; ดูผล</button>
-</div></div>
-
-<div class="toast" id="toast"></div>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyBdqgB2Kgkpa3-XKK_0Tcmt2eFLP2yLrtQ",
-  authDomain: "sos-score.firebaseapp.com",
-  databaseURL: "https://sos-score-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "sos-score",
-  storageBucket: "sos-score.firebasestorage.app",
-  messagingSenderId: "1097577492169",
-  appId: "1:1097577492169:web:199fb40c3ff48ed6fd2718",
-  measurementId: "G-E7E4N1JLBW"
-};
-const DB_PATH="screenings", PIN="01";
-/* ====== ใส่ Webhook URL (Make.com/Apps Script) ที่ push เข้า LINE OA สำหรับแจ้งเตือนเคสสีแดง ====== */
-const ALERT_WEBHOOK = "ใส่-WEBHOOK-URL";
-
-let db=null, fbReady=false;
-try{ firebase.initializeApp(firebaseConfig); db=firebase.database(); fbReady=true;
-  document.getElementById('fbDot').textContent='● เชื่อมต่อแล้ว';
-  document.getElementById('fbDot').style.background='rgba(6,199,85,.35)';
-}catch(e){ console.error(e); document.getElementById('fbDot').textContent='● ออฟไลน์'; }
-
-</script>
-
-<script>
-const TITLES={calc:['SOS Score รพ.สต.','คัดกรอง · ตัดสินใจส่งต่อ'],dashboard:['Dashboard','ภาพรวม · ประวัติ'],
-  referral:['แนวทางการส่งต่อ','การดูแลก่อนส่งต่อ'],knowledge:['คลังความรู้','Sepsis · MEWS']};
-function go(sec){
-  if(!TITLES[sec]) sec='calc';
-  document.querySelectorAll('[data-sec]').forEach(s=>s.style.display=(s.dataset.sec===sec)?'block':'none');
-  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===sec));
-  document.getElementById('hTitle').textContent=TITLES[sec][0];
-  document.getElementById('hSub').textContent=TITLES[sec][1];
-  const onCalcInput = sec==='calc' && document.getElementById('calcResult').style.display==='none';
-  document.getElementById('bottomBar').style.display=onCalcInput?'block':'none';
-  if(location.hash.slice(1)!==sec) history.replaceState(null,'','#'+sec);
-  if(sec==='dashboard') loadDash();
-  window.scrollTo({top:0});
-}
-document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.go));
-window.addEventListener('hashchange',()=>go(location.hash.slice(1)));
-
-const ITEMS=[
- {key:'temp',title:'อุณหภูมิ',unit:'°C',opts:[{t:'≤ 35.0',v:2,flag:true},{t:'35.1 – 38.4',v:0},{t:'≥ 38.5',v:2}]},
- {key:'sbp',title:'ความดันโลหิตตัวบน',unit:'mmHg',opts:[{t:'≤ 70',v:3,flag:true},{t:'71 – 90',v:2,flag:true},{t:'91 – 100',v:1},{t:'101 – 199',v:0},{t:'≥ 200',v:2}]},
- {key:'hr',title:'ชีพจร',unit:'ครั้ง/นาที',opts:[{t:'≤ 40',v:2},{t:'41 – 50',v:1},{t:'51 – 100',v:0},{t:'101 – 110',v:1},{t:'111 – 129',v:2},{t:'≥ 130',v:3,flag:true}]},
- {key:'rr',title:'อัตราการหายใจ',unit:'ครั้ง/นาที',opts:[{t:'≤ 8',v:2,flag:true},{t:'9 – 14',v:0},{t:'15 – 20',v:1},{t:'21 – 29',v:2},{t:'≥ 30',v:3,flag:true}]},
- {key:'avpu',title:'ระดับความรู้สึกตัว',unit:'AVPU',opts:[{t:'รู้สึกตัวดี (Alert)',v:0},{t:'สับสน / กระสับกระส่ายใหม่',v:1,flag:true},{t:'ซึม ตอบสนองต่อเสียง (Voice)',v:1,flag:true},{t:'ซึม ตอบสนองต่อความเจ็บ (Pain)',v:2,flag:true},{t:'ไม่ตอบสนอง (Unresponsive)',v:3,flag:true}]},
-];
-const SPO2=[{t:'≥ 95%'},{t:'92 – 94%',warn:true},{t:'< 92%',flag:true}];
-const BANDS=[
- {max:1,level:'ต่ำ',cls:'low',action:'เฝ้าระวังที่ รพ.สต.',sub:'อาการคงที่ ดูแลตามอาการ',
-  care:['ดูแลและสังเกตอาการที่ รพ.สต.','ให้การพยาบาลตามอาการนำ','แนะนำสัญญาณเตือนแก่ผู้ป่วย/ญาติ'],monitor:'ประเมินซ้ำตามรอบปกติ ทุก 4–8 ชม. หรือเมื่ออาการเปลี่ยน'},
- {max:3,level:'ปานกลาง',cls:'mid',action:'เฝ้าระวังใกล้ชิด · เตรียมส่งต่อ',sub:'ปรึกษาแพทย์แม่ข่ายทุกราย',
-  care:['ปรึกษาแพทย์แม่ข่ายทุกราย เพื่อร่วมตัดสินใจ','ประเมินซ้ำถี่ขึ้น ทุก 1–2 ชม. พร้อม SpO₂','เตรียมความพร้อมส่งต่อ หากคะแนนเพิ่มขึ้นหรืออาการไม่ดีขึ้น'],monitor:'ประเมินซ้ำทุก 1–2 ชม. พร้อมวัด SpO₂'},
- {max:99,level:'สูง',cls:'high',action:'ส่งต่อด่วน (Refer)',sub:'ผู้ป่วยเข้าสู่ภาวะวิกฤต',
-  care:['รายงานแพทย์/ประสานศูนย์ส่งต่อ–แม่ข่าย และ 1669 ทันที','ติดตาม V/S และ SpO₂ ต่อเนื่องระหว่างรอ/นำส่ง','เปิดเส้นเลือด ให้ออกซิเจน/สารน้ำตามข้อบ่งชี้','พิจารณา POCT lactate หากมี'],monitor:'ติดตามต่อเนื่อง / ทุก 15–30 นาที ระหว่างรอส่งต่อ'},
-];
-const sel={}; let spo2sel=null,lastResult=null;
-const fmt=d=>d?d.split('-').reverse().join('/'):'';
-const g=id=>document.getElementById(id).value.trim();
-document.getElementById('adate').valueAsDate=new Date();
-
-const form=document.getElementById('form');
-ITEMS.forEach((it,i)=>{
-  const c=document.createElement('section'); c.className='card';
-  c.innerHTML='<div class="q-head"><div class="q-num">'+(i+1)+'</div><div><div class="q-title">'+it.title+' <span class="req">*</span> <span class="q-unit">'+it.unit+'</span></div></div></div><div class="opts"></div>';
-  const box=c.querySelector('.opts');
-  it.opts.forEach((o,j)=>{const b=document.createElement('button');b.className='opt'+(o.flag?' flag':'');b.type='button';b.setAttribute('aria-pressed','false');
-    b.innerHTML='<span>'+o.t+'</span><span class="pt">'+(o.v>0?'+':'')+o.v+'</span>';
-    b.onclick=()=>{sel[it.key]=j;box.querySelectorAll('.opt').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');live();};
-    box.appendChild(b);});
-  form.appendChild(c);
-});
-const sbox=document.getElementById('spo2opts');
-SPO2.forEach((o,j)=>{const b=document.createElement('button');b.className='opt'+(o.flag?' flag':'');b.type='button';b.setAttribute('aria-pressed','false');
-  b.innerHTML='<span>'+o.t+'</span><span class="pt">'+(o.flag?'⚠':(o.warn?'•':'✓'))+'</span>';
-  b.onclick=()=>{spo2sel=j;sbox.querySelectorAll('.opt').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');};
-  sbox.appendChild(b);});
-function tot(){let s=0;ITEMS.forEach(it=>{if(sel[it.key]!=null)s+=it.opts[sel[it.key]].v});return s;}
-function live(){document.getElementById('barScore').textContent=tot();}
-
-function calculate(){
-  const miss=ITEMS.filter(it=>sel[it.key]==null);
-  if(miss.length){toast('กรุณาเลือก: '+miss.map(m=>m.title).join(', '));return;}
-  const s=tot(),band=BANDS.find(b=>s<=b.max),flags=[];
-  ITEMS.forEach(it=>{const o=it.opts[sel[it.key]];if(o.flag)flags.push(it.title+': '+o.t);});
-  if(spo2sel!=null&&SPO2[spo2sel].flag)flags.push('SpO₂ < 92%');
-  const overridden = band.cls==='low' && flags.length>0;
-  let v=band; if(overridden)v=BANDS[1];
-  const ver=document.getElementById('verdict');ver.className='verdict '+v.cls;
-  document.getElementById('vAction').textContent=v.action;
-  document.getElementById('vSub').textContent=v.sub;
-  document.getElementById('vScore').textContent=s;
-  document.getElementById('vLevel').textContent='ระดับ '+v.level;
-  const ab=document.getElementById('alertBtn'); ab.style.display=(v.cls==='high')?'block':'none'; ab.disabled=false; ab.textContent='🔔 แจ้งเตือนทีมผ่าน LINE OA';
-  document.getElementById('patLine').textContent=[g('pname'),g('ppoint')].filter(Boolean).join(' · ')||'ไม่ระบุข้อมูลผู้ป่วย';
-  const fb=document.getElementById('flagBox'),fl=document.getElementById('flagList'),fn=document.getElementById('flagNote');
-  if(flags.length){fb.style.display='block';fl.innerHTML=flags.map(f=>'<li>'+f+'</li>').join('');
-    if(overridden){fn.style.display='block';fn.textContent='คะแนนรวมไม่ถึงเกณฑ์ส่งต่อ แต่พบสัญญาณอันตราย — พิจารณาส่งต่อ/ปรึกษาแพทย์แม่ข่ายทันที';}
-    else fn.style.display='none';
-  }else fb.style.display='none';
-  document.getElementById('careList').innerHTML=v.care.map(c=>'<li>'+c+'</li>').join('');
-  document.getElementById('monitor').textContent='รอบติดตาม: '+v.monitor;
-  document.getElementById('breakdown').innerHTML=ITEMS.map(it=>{const o=it.opts[sel[it.key]];
-    return '<div class="br"><span>'+it.title+' <span style="color:var(--muted)">('+o.t+')</span></span><b>'+o.v+'</b></div>';}).join('');
-  lastResult={total:s,level:v.level,levelClass:v.cls,action:v.action,flags,
-    vitals:Object.fromEntries(ITEMS.map(it=>[it.key,it.opts[sel[it.key]].t])),
-    vitalScores:Object.fromEntries(ITEMS.map(it=>[it.key,it.opts[sel[it.key]].v])),
-    spo2:spo2sel!=null?SPO2[spo2sel].t:null};
-  buildSBAR(s,v,flags);
-  const sb=document.getElementById('saveBtn');sb.disabled=false;sb.textContent='บันทึกการคัดกรอง';
-  document.getElementById('calcInput').style.display='none';
-  document.getElementById('calcResult').style.display='block';
-  document.getElementById('bottomBar').style.display='none';
-  document.getElementById('hTitle').textContent='ผลการคัดกรอง';
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function buildSBAR(s,v,flags){
-  const vs=ITEMS.map(it=>{const o=it.opts[sel[it.key]];const lbl={temp:'T',sbp:'BP',hr:'HR',rr:'RR',avpu:'รู้สึกตัว'}[it.key];return lbl+' '+o.t;}).join(' / ');
-  const spo2=spo2sel!=null?' / SpO₂ '+SPO2[spo2sel].t:'';
-  document.getElementById('sbar').textContent='[ส่งต่อ/ปรึกษา — SOS Score]\n'
-    +'S: ผู้ป่วย'+(g('pname')?' '+g('pname'):'')+(g('ppoint')?' ('+g('ppoint')+')':'')+(g('pnote')?'\n   อาการ: '+g('pnote'):'')+'\n'
-    +'B: (ภูมิหลัง/โรคประจำตัว) '+(g('pnote')||'-')+'\n'
-    +'A: SOS Score = '+s+' คะแนน · ระดับ'+v.level+'\n'
-    +'   V/S: '+vs+spo2+'\n'
-    +'   สัญญาณอันตราย: '+(flags.length?flags.join(', '):'ไม่พบ')+'\n'
-    +'R: '+v.action+' — ขอคำแนะนำ/ประสานรับส่งต่อ\n'
-    +'   '+(g('facility')||'')+'  วันที่ '+fmt(g('adate'));
-}
-async function saveRecord(){
-  if(!lastResult){toast('ยังไม่มีผล');return;}
-  if(!fbReady){toast('เชื่อมต่อฐานข้อมูลไม่ได้');return;}
-  const btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='กำลังบันทึก…';
-  try{
-    await db.ref(DB_PATH).push({facility:g('facility')||null,name:g('pname')||null,point:g('ppoint')||null,
-      note:g('pnote')||null,assessDate:g('adate')||null,total:lastResult.total,level:lastResult.level,levelClass:lastResult.levelClass,
-      action:lastResult.action,flags:lastResult.flags,vitals:lastResult.vitals,vitalScores:lastResult.vitalScores,spo2:lastResult.spo2,
-      createdAt:firebase.database.ServerValue.TIMESTAMP});
-    toast('บันทึกแล้ว ✓');btn.textContent='บันทึกแล้ว ✓';
-    document.getElementById('saveNote').textContent='บันทึกเข้าระบบเรียบร้อย — ดูได้ในหน้า Dashboard';
-  }catch(e){console.error(e);toast('บันทึกไม่สำเร็จ: '+e.message);btn.disabled=false;btn.textContent='ลองบันทึกอีกครั้ง';}
-}
-function copySBAR(){const t=document.getElementById('sbar').textContent;
-  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('คัดลอกแล้ว'),()=>{
-   const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('คัดลอกแล้ว')}catch(e){}a.remove();});}
-async function alertLine(){
-  if(!lastResult){toast('ยังไม่มีผล');return;}
-  let url=''; try{url=localStorage.getItem('sos_webhook')||'';}catch(e){}
-  if(!url && !ALERT_WEBHOOK.startsWith('ใส่')) url=ALERT_WEBHOOK;
-  if(!url){toast('ยังไม่ได้ตั้งค่า URL แจ้งเตือน — กด ⚙ ตั้งค่าก่อน');return;}
-  const btn=document.getElementById('alertBtn');btn.disabled=true;btn.textContent='กำลังส่ง…';
-  const payload={level:lastResult.level,levelClass:lastResult.levelClass,total:lastResult.total,
-    name:g('pname')||'-',point:g('ppoint')||'-',facility:g('facility')||'-',note:g('pnote')||'-',
-    flags:(lastResult.flags||[]).join(', ')||'ไม่พบ',vitals:lastResult.vitals,vitalScores:lastResult.vitalScores,spo2:lastResult.spo2,
-    sbar:document.getElementById('sbar').textContent,when:new Date().toLocaleString('th-TH')};
-  try{
-    await fetch(url,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
-    toast('ส่งแจ้งเตือนเข้า LINE OA แล้ว ✓');btn.textContent='แจ้งเตือนแล้ว ✓';
-  }catch(e){console.error(e);toast('ส่งไม่สำเร็จ: '+e.message);btn.disabled=false;btn.textContent='🔔 แจ้งเตือนทีมผ่าน LINE OA';}
-}
-function backToInput(){document.getElementById('calcResult').style.display='none';document.getElementById('calcInput').style.display='block';
-  document.getElementById('bottomBar').style.display='block';document.getElementById('hTitle').textContent='SOS Score รพ.สต.';window.scrollTo({top:0,behavior:'smooth'});}
-function newAssessment(){for(const k in sel)delete sel[k];spo2sel=null;lastResult=null;
-  document.querySelectorAll('#calcInput .opt').forEach(x=>x.setAttribute('aria-pressed','false'));
-  ['pname','pnote'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('adate').valueAsDate=new Date();live();backToInput();}
-function resetAll(){for(const k in sel)delete sel[k];spo2sel=null;
-  document.querySelectorAll('#calcInput .opt').forEach(x=>x.setAttribute('aria-pressed','false'));live();window.scrollTo({top:0,behavior:'smooth'});}
-
-let allRecs=[];
-async function loadDash(){
-  const list=document.getElementById('recList');
-  if(!fbReady){list.innerHTML='<div class="empty">เชื่อมต่อฐานข้อมูลไม่ได้</div>';return;}
-  list.innerHTML='<div class="empty">กำลังโหลด…</div>';
-  try{
-    const snap=await db.ref(DB_PATH).orderByChild('createdAt').limitToLast(500).once('value');
-    const arr=[]; snap.forEach(ch=>{arr.push(Object.assign({_id:ch.key},ch.val()))});
-    arr.reverse(); allRecs=arr;
-    const c={low:0,mid:0,high:0}; let today=0;
-    const t0=new Date(); t0.setHours(0,0,0,0);
-    arr.forEach(r=>{if(c[r.levelClass]!=null)c[r.levelClass]++; if(r.createdAt&&r.createdAt>=t0.getTime())today++;});
-    document.getElementById('stTotal').textContent=arr.length;
-    document.getElementById('stLow').textContent=c.low;
-    document.getElementById('stMid').textContent=c.mid;
-    document.getElementById('stHigh').textContent=c.high;
-    document.getElementById('stToday').textContent='วันนี้: '+today+' ราย';
-    list.innerHTML = arr.length? arr.slice(0,30).map(recHTML).join('') : '<div class="empty">ยังไม่มีข้อมูลที่บันทึก</div>';
-  }catch(e){console.error(e);list.innerHTML='<div class="empty">โหลดไม่สำเร็จ: '+e.message+'</div>';}
-}
-function recHTML(r){
-  const when=r.createdAt?new Date(r.createdAt).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):(r.assessDate||'');
-  const who=r.name||'(ไม่ระบุชื่อ)';
-  const sub=[r.facility,r.point,when].filter(Boolean).join(' · ');
-  return '<div class="rec"><div class="sbadge '+(r.levelClass||'low')+'">'+(r.total!=null?r.total:'-')+'</div>'
-    +'<div class="meta"><b>'+who+'</b><small>'+sub+'</small>'
-    +'<small>ระดับ'+(r.level||'')+(r.flags&&r.flags.length?' · ⚠ '+r.flags.length+' สัญญาณ':'')+'</small></div></div>';
-}
-function vitName(k){return {temp:'อุณหภูมิ',sbp:'ความดันตัวบน',hr:'ชีพจร',rr:'อัตราการหายใจ',avpu:'ระดับความรู้สึกตัว'}[k]||k;}
-function recDetailHTML(r){
-  const when=r.createdAt?new Date(r.createdAt).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):(r.assessDate||'');
-  let rows='';
-  if(r.vitals){['temp','sbp','hr','rr','avpu'].forEach(k=>{ if(r.vitals[k]!=null)
-    rows+='<div class="br"><span>'+vitName(k)+' <span style="color:var(--muted)">('+r.vitals[k]+')</span></span><b>'+(r.vitalScores?r.vitalScores[k]:'')+'</b></div>';});}
-  if(r.spo2) rows+='<div class="br"><span>SpO₂</span><b>'+r.spo2+'</b></div>';
-  const flags=(r.flags&&r.flags.length)?'<div style="margin-top:8px;font-size:13px;color:var(--high);font-weight:600">⚠ '+r.flags.join(', ')+'</div>':'';
-  const note=r.note&&r.note!=='-'?'<div style="margin-top:8px;font-size:13.5px"><b>อาการ:</b> '+r.note+'</div>':'';
-  return '<div class="rec" style="flex-direction:column;align-items:stretch">'
-    +'<div style="display:flex;align-items:center;gap:12px">'
-      +'<div class="sbadge '+(r.levelClass||'low')+'">'+(r.total!=null?r.total:'-')+'</div>'
-      +'<div class="meta"><b>ระดับ'+(r.level||'')+' · '+(r.action||'')+'</b><small>'+[r.facility,r.point,when].filter(Boolean).join(' · ')+'</small></div></div>'
-    +'<div class="breakdown" style="margin-top:10px">'+rows+'</div>'+flags+note
-    +'<button onclick="confirmDelete(\''+r._id+'\')" style="margin-top:10px;background:#fff;border:1.5px solid var(--high);color:var(--high);border-radius:10px;padding:9px;font-family:inherit;font-weight:700;cursor:pointer">🗑 ลบรายการนี้</button>'
-    +'</div>';
-}
-async function confirmDelete(id){
-  const r=allRecs.find(x=>x._id===id); if(!r){toast('ไม่พบรายการ');return;}
-  const when=r.createdAt?new Date(r.createdAt).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):(r.assessDate||'');
-  if(!confirm('ต้องการลบรายการของ "'+(r.name||'ไม่ระบุชื่อ')+'" ('+when+') ใช่ไหม?\nการลบนี้กู้คืนไม่ได้'))return;
-  try{ await db.ref(DB_PATH+'/'+id).remove(); toast('ลบแล้ว ✓'); await loadDash(); searchPerson(); }
-  catch(e){ console.error(e); toast('ลบไม่สำเร็จ: '+e.message); }
-}
-function unlock(){
-  if(document.getElementById('pinInput').value.trim()===PIN){
-    document.getElementById('lockBox').style.display='none';
-    document.getElementById('personBox').style.display='block';
-  }else toast('รหัสไม่ถูกต้อง');
-}
-function searchPerson(){
-  const q=document.getElementById('hnSearch').value.trim().toLowerCase();
-  const box=document.getElementById('personResult');
-  if(!q){box.innerHTML='';return;}
-  if(!allRecs.length){box.innerHTML='<div class="empty">ยังไม่มีข้อมูล — กดรีเฟรชด้านบนก่อน</div>';return;}
-  const found=allRecs.filter(r=>r.name&&r.name.toLowerCase().includes(q));
-  if(!found.length){box.innerHTML='<div class="empty">ไม่พบประวัติของ "'+q+'"</div>';return;}
-  const head=found[0];
-  box.innerHTML='<div class="block" style="margin-top:10px;box-shadow:none;border:1px solid var(--line)">'
-    +'<h3 style="margin-bottom:2px">'+(head.name||'(ไม่ระบุชื่อ)')+'</h3>'
-    +'<small style="color:var(--muted)">พบ '+found.length+' ครั้งการประเมิน</small>'
-    + found.map(recDetailHTML).join('') + '</div>';
-}
-
-function toggleSettings(){const b=document.getElementById('settingsBlock');b.style.display=b.style.display==='none'?'block':'none';
-  try{document.getElementById('webhookInput').value=localStorage.getItem('sos_webhook')||'';}catch(e){}
-  updateWebhookStatus();}
-function saveWebhook(){const u=document.getElementById('webhookInput').value.trim();
-  try{ if(u){localStorage.setItem('sos_webhook',u);toast('บันทึกการตั้งค่าแล้ว ✓');} else {localStorage.removeItem('sos_webhook');toast('ล้างการตั้งค่าแล้ว');} }catch(e){toast('บันทึกไม่ได้ในเบราว์เซอร์นี้');}
-  updateWebhookStatus();}
-function updateWebhookStatus(){let u='';try{u=localStorage.getItem('sos_webhook')||'';}catch(e){}
-  const el=document.getElementById('webhookStatus');if(!el)return;
-  el.textContent=u?'✓ ตั้งค่าแล้ว':'ยังไม่ได้ตั้งค่า';el.style.color=u?'var(--low)':'var(--muted)';}
-
-go(location.hash.slice(1)||'calc');
-let tT;function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>e.classList.remove('show'),2600);}
-</script>
-</body>
-</html>
+      <div class="acc-head" style="background:linear-gradient(135deg,#e08a1e,#b45309)"><span class="em">⚠️</span> สัญญาณเตือนที่ต้องนึกถึ
