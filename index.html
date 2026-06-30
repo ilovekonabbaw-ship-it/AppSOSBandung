@@ -418,8 +418,8 @@ async function alertLine(){
   if(!url){toast('ยังไม่ได้ตั้งค่า URL แจ้งเตือน — กด ⚙ ตั้งค่าก่อน');return;}
   const btn=document.getElementById('alertBtn');btn.disabled=true;btn.textContent='กำลังส่ง…';
   const payload={level:lastResult.level,levelClass:lastResult.levelClass,total:lastResult.total,
-    name:g('pname')||'-',point:g('ppoint')||'-',facility:g('facility')||'-',
-    flags:(lastResult.flags||[]).join(', ')||'ไม่พบ',
+    name:g('pname')||'-',point:g('ppoint')||'-',facility:g('facility')||'-',note:g('pnote')||'-',
+    flags:(lastResult.flags||[]).join(', ')||'ไม่พบ',vitals:lastResult.vitals,vitalScores:lastResult.vitalScores,spo2:lastResult.spo2,
     sbar:document.getElementById('sbar').textContent,when:new Date().toLocaleString('th-TH')};
   try{
     await fetch(url,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
@@ -463,6 +463,30 @@ function recHTML(r){
     +'<div class="meta"><b>'+who+'</b><small>'+sub+'</small>'
     +'<small>ระดับ'+(r.level||'')+(r.flags&&r.flags.length?' · ⚠ '+r.flags.length+' สัญญาณ':'')+'</small></div></div>';
 }
+function vitName(k){return {temp:'อุณหภูมิ',sbp:'ความดันตัวบน',hr:'ชีพจร',rr:'อัตราการหายใจ',avpu:'ระดับความรู้สึกตัว'}[k]||k;}
+function recDetailHTML(r){
+  const when=r.createdAt?new Date(r.createdAt).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):(r.assessDate||'');
+  let rows='';
+  if(r.vitals){['temp','sbp','hr','rr','avpu'].forEach(k=>{ if(r.vitals[k]!=null)
+    rows+='<div class="br"><span>'+vitName(k)+' <span style="color:var(--muted)">('+r.vitals[k]+')</span></span><b>'+(r.vitalScores?r.vitalScores[k]:'')+'</b></div>';});}
+  if(r.spo2) rows+='<div class="br"><span>SpO₂</span><b>'+r.spo2+'</b></div>';
+  const flags=(r.flags&&r.flags.length)?'<div style="margin-top:8px;font-size:13px;color:var(--high);font-weight:600">⚠ '+r.flags.join(', ')+'</div>':'';
+  const note=r.note&&r.note!=='-'?'<div style="margin-top:8px;font-size:13.5px"><b>อาการ:</b> '+r.note+'</div>':'';
+  return '<div class="rec" style="flex-direction:column;align-items:stretch">'
+    +'<div style="display:flex;align-items:center;gap:12px">'
+      +'<div class="sbadge '+(r.levelClass||'low')+'">'+(r.total!=null?r.total:'-')+'</div>'
+      +'<div class="meta"><b>ระดับ'+(r.level||'')+' · '+(r.action||'')+'</b><small>'+[r.facility,r.point,when].filter(Boolean).join(' · ')+'</small></div></div>'
+    +'<div class="breakdown" style="margin-top:10px">'+rows+'</div>'+flags+note
+    +'<button onclick="confirmDelete(\''+r._id+'\')" style="margin-top:10px;background:#fff;border:1.5px solid var(--high);color:var(--high);border-radius:10px;padding:9px;font-family:inherit;font-weight:700;cursor:pointer">🗑 ลบรายการนี้</button>'
+    +'</div>';
+}
+async function confirmDelete(id){
+  const r=allRecs.find(x=>x._id===id); if(!r){toast('ไม่พบรายการ');return;}
+  const when=r.createdAt?new Date(r.createdAt).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):(r.assessDate||'');
+  if(!confirm('ต้องการลบรายการของ "'+(r.name||'ไม่ระบุชื่อ')+'" ('+when+') ใช่ไหม?\nการลบนี้กู้คืนไม่ได้'))return;
+  try{ await db.ref(DB_PATH+'/'+id).remove(); toast('ลบแล้ว ✓'); await loadDash(); searchPerson(); }
+  catch(e){ console.error(e); toast('ลบไม่สำเร็จ: '+e.message); }
+}
 function unlock(){
   if(document.getElementById('pinInput').value.trim()===PIN){
     document.getElementById('lockBox').style.display='none';
@@ -480,7 +504,7 @@ function searchPerson(){
   box.innerHTML='<div class="block" style="margin-top:10px;box-shadow:none;border:1px solid var(--line)">'
     +'<h3 style="margin-bottom:2px">'+(head.name||'(ไม่ระบุชื่อ)')+'</h3>'
     +'<small style="color:var(--muted)">พบ '+found.length+' ครั้งการประเมิน</small>'
-    + found.map(recHTML).join('') + '</div>';
+    + found.map(recDetailHTML).join('') + '</div>';
 }
 
 function toggleSettings(){const b=document.getElementById('settingsBlock');b.style.display=b.style.display==='none'?'block':'none';
