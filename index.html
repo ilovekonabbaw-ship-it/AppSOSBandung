@@ -76,10 +76,10 @@
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
   .stat{background:#fbfdfc;border:1.5px solid var(--line);border-radius:12px;padding:10px;text-align:center}
   .stat b{display:block;font-size:22px;font-weight:800}.stat span{font-size:11px;color:var(--muted)}
-  .stat.low b{color:var(--low)}.stat.mid b{color:var(--mid)}.stat.high b{color:var(--high)}
+  .stat.low b{color:#16a34a}.stat.mid b{color:#ca8a04}.stat.high b{color:#dc2626}
   .rec{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-top:8px;background:#fbfdfc}
   .rec .sbadge{flex:none;width:46px;height:46px;border-radius:11px;display:grid;place-items:center;font-weight:800;font-size:18px;color:#fff}
-  .rec .sbadge.low{background:var(--low)}.rec .sbadge.mid{background:var(--mid)}.rec .sbadge.high{background:var(--high)}
+  .rec .sbadge.low{background:#16a34a}.rec .sbadge.mid{background:#eab308;color:#3f2d00}.rec .sbadge.high{background:#dc2626}
   .rec .meta{flex:1;min-width:0}.rec .meta b{font-size:14.5px}.rec .meta small{display:block;color:var(--muted);font-size:12px}
   .empty{text-align:center;color:var(--muted);padding:24px 10px;font-size:14px}
   .lock{display:flex;gap:8px;margin-top:10px}
@@ -140,13 +140,6 @@
         <div class="q-title">SpO₂ <span class="q-unit">(เสริม — ไม่คิดคะแนน เป็นสัญญาณเตือน)</span></div></div>
         <div class="opts" id="spo2opts"></div></section>
       <div class="disclaimer">เครื่องมือช่วยตัดสินใจเบื้องต้นตามคะแนน SOS Score ใช้ในผู้ป่วยที่สงสัยภาวะติดเชื้อ ไม่ทดแทนการวินิจฉัยของแพทย์</div>
-      <div style="text-align:center;margin-top:10px"><button onclick="toggleSettings()" style="background:none;border:none;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;text-decoration:underline">⚙ ตั้งค่าการแจ้งเตือน LINE OA</button></div>
-      <div class="block" id="settingsBlock" style="display:none">
-        <h3>⚙ ตั้งค่าการแจ้งเตือน LINE OA</h3>
-        <p style="font-size:13px;color:var(--muted);margin:0 0 8px">วาง URL ของ Apps Script (เก็บไว้ในเครื่องนี้เท่านั้น ไม่ติดไปกับไฟล์บน GitHub) ตั้งครั้งเดียวต่อเครื่อง</p>
-        <div class="lock"><input id="webhookInput" placeholder="https://script.google.com/macros/s/.../exec"><button onclick="saveWebhook()">บันทึก</button></div>
-        <p id="webhookStatus" style="font-size:12px;margin:8px 0 0"></p>
-      </div>
     </div>
     <div id="calcResult" style="display:none">
       <div class="verdict" id="verdict"><div class="v-row">
@@ -192,7 +185,11 @@
       <div class="refcard low"><b>🟢 0–1 คะแนน · เฝ้าระวังที่ รพ.สต.</b>
         <p>ดูแลตามอาการ ประเมินซ้ำตามรอบปกติทุก 4–8 ชม. ให้คำแนะนำสัญญาณเตือนแก่ผู้ป่วย/ญาติ</p></div>
       <div class="refcard mid"><b>🟡 2–3 คะแนน · เฝ้าระวังใกล้ชิด เตรียมส่งต่อ</b>
-        <p>ปรึกษาแพทย์แม่ข่ายทุกราย ประเมินซ้ำถี่ขึ้นทุก 1–2 ชม. พร้อม SpO₂ เตรียมความพร้อมส่งต่อ หากคะแนนเพิ่มขึ้นหรืออาการไม่ดีขึ้น → ส่งต่อ</p></div>
+        <p><b>ทำตามลำดับ:</b><br>
+        1. โทรปรึกษาแพทย์แม่ข่ายทุกราย แจ้งคะแนนและอาการ<br>
+        2. วัดสัญญาณชีพซ้ำทุก 1–2 ชม. พร้อม SpO₂ และจดบันทึก<br>
+        3. เตรียมพร้อมส่งต่อ (เอกสาร/ญาติ/รถ)<br>
+        4. ถ้าคะแนนเพิ่มขึ้น หรืออาการแย่ลง → ส่งต่อทันที</p></div>
       <div class="refcard high"><b>🔴 ≥ 4 คะแนน · ส่งต่อด่วน (Refer)</b>
         <p>ผู้ป่วยเข้าสู่ภาวะวิกฤต รายงานแพทย์/ประสานศูนย์ส่งต่อ–แม่ข่ายและ 1669 ทันที นำส่งพร้อมเฝ้าระวังต่อเนื่อง</p></div>
       <div class="alert"><h3>สัญญาณอันตราย — ส่งต่อแม้คะแนนไม่ถึงเกณฑ์</h3>
@@ -277,7 +274,7 @@ const firebaseConfig = {
 };
 const DB_PATH="screenings", PIN="01";
 /* ====== ใส่ Webhook URL (Make.com/Apps Script) ที่ push เข้า LINE OA สำหรับแจ้งเตือนเคสสีแดง ====== */
-const ALERT_WEBHOOK = "ใส่-WEBHOOK-URL";
+const ALERT_WEBHOOK = "https://script.google.com/macros/s/AKfycbxckByrI6OqgvNAgDMlqHRuuWtLCxDjruwHoekx5Z6aL2IzGRlXJppEOce3pbHAv0Zz/exec";
 
 let db=null, fbReady=false;
 try{ firebase.initializeApp(firebaseConfig); db=firebase.database(); fbReady=true;
@@ -317,7 +314,7 @@ const BANDS=[
  {max:1,level:'ต่ำ',cls:'low',action:'เฝ้าระวังที่ รพ.สต.',sub:'อาการคงที่ ดูแลตามอาการ',
   care:['ดูแลและสังเกตอาการที่ รพ.สต.','ให้การพยาบาลตามอาการนำ','แนะนำสัญญาณเตือนแก่ผู้ป่วย/ญาติ'],monitor:'ประเมินซ้ำตามรอบปกติ ทุก 4–8 ชม. หรือเมื่ออาการเปลี่ยน'},
  {max:3,level:'ปานกลาง',cls:'mid',action:'เฝ้าระวังใกล้ชิด · เตรียมส่งต่อ',sub:'ปรึกษาแพทย์แม่ข่ายทุกราย',
-  care:['ปรึกษาแพทย์แม่ข่ายทุกราย เพื่อร่วมตัดสินใจ','ประเมินซ้ำถี่ขึ้น ทุก 1–2 ชม. พร้อม SpO₂','เตรียมความพร้อมส่งต่อ หากคะแนนเพิ่มขึ้นหรืออาการไม่ดีขึ้น'],monitor:'ประเมินซ้ำทุก 1–2 ชม. พร้อมวัด SpO₂'},
+  care:['โทรปรึกษาแพทย์แม่ข่ายทุกราย แจ้งคะแนนและอาการ','วัดสัญญาณชีพซ้ำทุก 1–2 ชม. พร้อม SpO₂ และจดบันทึก','เตรียมพร้อมส่งต่อ (เอกสาร/ญาติ/รถ)','ถ้าคะแนนเพิ่มขึ้นหรืออาการแย่ลง → ส่งต่อทันที'],monitor:'ประเมินซ้ำทุก 1–2 ชม. พร้อมวัด SpO₂'},
  {max:99,level:'สูง',cls:'high',action:'ส่งต่อด่วน (Refer)',sub:'ผู้ป่วยเข้าสู่ภาวะวิกฤต',
   care:['รายงานแพทย์/ประสานศูนย์ส่งต่อ–แม่ข่าย และ 1669 ทันที','ติดตาม V/S และ SpO₂ ต่อเนื่องระหว่างรอ/นำส่ง','เปิดเส้นเลือด ให้ออกซิเจน/สารน้ำตามข้อบ่งชี้','ตรวจน้ำตาลปลายนิ้ว (DTX) เพื่อแยกภาวะน้ำตาลผิดปกติ; หากมีเครื่องตรวจแลคเตทข้างเตียงให้ตรวจประกอบ'],monitor:'ติดตามต่อเนื่อง / ทุก 15–30 นาที ระหว่างรอส่งต่อ'},
 ];
@@ -418,9 +415,8 @@ function copySBAR(){const t=document.getElementById('sbar').textContent;
    const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');toast('คัดลอกแล้ว')}catch(e){}a.remove();});}
 async function alertLine(){
   if(!lastResult){toast('ยังไม่มีผล');return;}
-  let url=''; try{url=localStorage.getItem('sos_webhook')||'';}catch(e){}
-  if(!url && !ALERT_WEBHOOK.startsWith('ใส่')) url=ALERT_WEBHOOK;
-  if(!url){toast('ยังไม่ได้ตั้งค่า URL แจ้งเตือน — กด ⚙ ตั้งค่าก่อน');return;}
+  const url=ALERT_WEBHOOK;
+  if(!url || url.startsWith('ใส่')){toast('ยังไม่ได้ตั้งค่าปลายทางแจ้งเตือน');return;}
   const btn=document.getElementById('alertBtn');btn.disabled=true;btn.textContent='กำลังส่ง…';
   const payload={level:lastResult.level,levelClass:lastResult.levelClass,total:lastResult.total,
     name:g('pname')||'-',phone:g('pphone')||'-',point:g('ppoint')||'-',facility:g('facility')||'-',note:g('pnote')||'-',
@@ -469,17 +465,40 @@ function fillYearSel(){
   for(let y=2569;y<=2600;y++){ html+='<option value="'+y+'"'+(y===now?' selected':'')+'>'+y+'</option>'; }
   sel.innerHTML=html;
 }
+let selYear=null;
 function renderMonthly(){
   const sel=document.getElementById('yearSel'); if(!sel||!sel.value)return;
-  const yBE=parseInt(sel.value,10), yAD=yBE-543;
-  const m=Array.from({length:12},()=>({total:0,high:0}));
+  selYear=parseInt(sel.value,10); const yAD=selYear-543;
+  const m=Array.from({length:12},()=>({total:0,low:0,mid:0,high:0}));
   allRecs.forEach(r=>{ if(!r.createdAt)return; const d=new Date(r.createdAt);
-    if(d.getFullYear()===yAD){ const i=d.getMonth(); m[i].total++; if(r.levelClass==='high')m[i].high++; } });
+    if(d.getFullYear()===yAD){ const i=d.getMonth(); m[i].total++; if(m[i][r.levelClass]!=null)m[i][r.levelClass]++; } });
   const box=document.getElementById('monthlyBox'), yt=m.reduce((a,x)=>a+x.total,0);
-  if(!yt){ box.innerHTML='<div class="empty">ยังไม่มีข้อมูลในปี '+yBE+'</div>'; return; }
-  box.innerHTML='<div class="breakdown">'
-    + m.map((x,i)=> x.total? '<div class="br"><span>'+THMON[i]+'</span><b>'+x.total+' ราย'+(x.high?' · 🔴 '+x.high:'')+'</b></div>':'' ).join('')
-    + '<div class="br" style="background:var(--primary-soft)"><span><b>รวมทั้งปี '+yBE+'</b></span><b>'+yt+' ราย</b></div></div>';
+  if(!yt){ box.innerHTML='<div class="empty">ยังไม่มีข้อมูลในปี '+selYear+'</div>'; return; }
+  let html='<p style="font-size:12.5px;color:var(--muted);margin:0 0 4px">แตะเดือนเพื่อดูรายละเอียด</p>';
+  m.forEach((x,i)=>{ if(x.total){
+    html+='<div class="rec" style="cursor:pointer" onclick="openMonth('+i+')">'
+      +'<div style="flex:1;min-width:0"><b>'+THMON[i]+' '+selYear+'</b>'
+      +'<small style="display:block;color:var(--muted);font-size:12px">🟢 '+x.low+' · 🟡 '+x.mid+' · 🔴 '+x.high+'</small></div>'
+      +'<b style="font-size:18px">'+x.total+'</b><span style="color:var(--muted);font-size:12px;margin-left:4px;white-space:nowrap">คน ▸</span></div>';
+  }});
+  html+='<div class="br" style="background:var(--primary-soft);margin-top:8px"><span><b>รวมทั้งปี '+selYear+'</b></span><b>'+yt+' คน</b></div>';
+  box.innerHTML=html;
+}
+function openMonth(mIdx){
+  const yAD=selYear-543;
+  const recs=allRecs.filter(r=>{ if(!r.createdAt)return false; const d=new Date(r.createdAt); return d.getFullYear()===yAD && d.getMonth()===mIdx; });
+  const c={low:0,mid:0,high:0}; recs.forEach(r=>{ if(c[r.levelClass]!=null)c[r.levelClass]++; });
+  const order={high:0,mid:1,low:2};
+  recs.sort((a,b)=>{ const s=(order[a.levelClass]!=null?order[a.levelClass]:3)-(order[b.levelClass]!=null?order[b.levelClass]:3); if(s)return s; return (b.createdAt||0)-(a.createdAt||0); });
+  let html='<button onclick="renderMonthly()" style="background:none;border:none;color:var(--primary-d);font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;padding:0 0 10px">← กลับ เลือกเดือนอื่น</button>';
+  html+='<h4 style="margin:0 0 10px;font-size:15px">สถิติเดือน '+THMON[mIdx]+' '+selYear+'</h4>';
+  html+='<div class="stats"><div class="stat"><b>'+recs.length+'</b><span>ทั้งหมด</span></div>'
+    +'<div class="stat low"><b>'+c.low+'</b><span>ต่ำ</span></div>'
+    +'<div class="stat mid"><b>'+c.mid+'</b><span>ปานกลาง</span></div>'
+    +'<div class="stat high"><b>'+c.high+'</b><span>สูง</span></div></div>';
+  html+='<p style="font-size:12.5px;color:var(--muted);margin:12px 0 2px">รายชื่อทั้งหมด (เรียงตามความรุนแรง · แตะเพื่อดู/ลบ)</p>';
+  html+=recs.map(recRow).join('');
+  document.getElementById('monthlyBox').innerHTML=html;
 }
 function recRow(r){
   const when=r.createdAt?new Date(r.createdAt).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'}):(r.assessDate||'');
@@ -512,16 +531,6 @@ async function confirmDelete(id){
   try{ await db.ref(DB_PATH+'/'+id).remove(); toast('ลบแล้ว ✓'); await loadDash(); }
   catch(e){ console.error(e); toast('ลบไม่สำเร็จ: '+e.message); }
 }
-
-function toggleSettings(){const b=document.getElementById('settingsBlock');b.style.display=b.style.display==='none'?'block':'none';
-  try{document.getElementById('webhookInput').value=localStorage.getItem('sos_webhook')||'';}catch(e){}
-  updateWebhookStatus();}
-function saveWebhook(){const u=document.getElementById('webhookInput').value.trim();
-  try{ if(u){localStorage.setItem('sos_webhook',u);toast('บันทึกการตั้งค่าแล้ว ✓');} else {localStorage.removeItem('sos_webhook');toast('ล้างการตั้งค่าแล้ว');} }catch(e){toast('บันทึกไม่ได้ในเบราว์เซอร์นี้');}
-  updateWebhookStatus();}
-function updateWebhookStatus(){let u='';try{u=localStorage.getItem('sos_webhook')||'';}catch(e){}
-  const el=document.getElementById('webhookStatus');if(!el)return;
-  el.textContent=u?'✓ ตั้งค่าแล้ว':'ยังไม่ได้ตั้งค่า';el.style.color=u?'var(--low)':'var(--muted)';}
 
 go(location.hash.slice(1)||'calc');
 let tT;function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>e.classList.remove('show'),2600);}
